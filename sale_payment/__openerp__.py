@@ -43,6 +43,7 @@ Based on previous work of Readylan (version for 4.2).
         "account_payment_extension",
         "sale",
         "stock",
+        "sale_payment_method",
     ],
     "init_xml": [],
     "demo_xml": [],

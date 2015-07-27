@@ -25,6 +25,18 @@ from osv import fields, osv
 
 class sale_order(osv.osv):
     _inherit = 'sale.order'
+
+    def create(self, cr, uid, vals, context=None):
+        if context is None:
+            context = {}
+        if 'payment_method_id' in vals:
+            payment_method = self.pool.get('payment.method').browse(
+                cr, uid, vals['payment_method_id'], context)
+            if payment_method.payment_type_id:
+                vals['payment_type'] = payment_method.payment_type_id.id
+
+        return super(sale_order, self).create(cr, uid, vals, context=context)
+
     _columns = {
         'payment_type': fields.many2one(
             'payment.type', 'Payment type',
@@ -83,6 +95,20 @@ class sale_order(osv.osv):
                 'partner_bank_id': order.partner_bank.id
             }, context=context)
         return inv_id
+
+    def onchange_payment_method_id(self, cr, uid, ids, payment_method_id,
+                                   context=None):
+        if context is None:
+            context = {}
+        res = super(sale_order, self).onchange_payment_method_id(
+            cr, uid, ids, payment_method_id, context=context)
+        if res:
+            method_obj = self.pool.get('payment.method')
+            method = method_obj.browse(
+                cr, uid, payment_method_id, context=context)
+            if method.payment_type_id:
+                res['value']['payment_type'] = method.payment_type_id.id
+        return res
 
 sale_order()
 
